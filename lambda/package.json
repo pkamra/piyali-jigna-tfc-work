@@ -1,0 +1,11 @@
+{
+    "name": "backend-lambda",
+    "version": "1.0.0",
+    "main": "index.js",
+    "dependencies": {
+       "@aws-sdk/client-verifiedpermissions": "^3.369.0",
+       "@aws-sdk/client-bedrock-agent-runtime": "3.787.0",
+       "uuid": "^9.0.0"
+    }
+}
+  

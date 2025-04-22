@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chatbot</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <h1>Chatbot</h1>
+
+    <div id="login-section">
+      <h2>Login</h2>
+      <input id="username" placeholder="Email" type="email">
+      <input id="password" placeholder="Password" type="password">
+      <button id="login-button">Login</button>
+      <p>Don't have an account? <button id="switch-to-signup">Sign Up</button></p>
+    </div>
+
+    <div id="signup-section" style="display: none;">
+      <h2>Sign Up</h2>
+      <input id="signup-email" placeholder="Email" type="email">
+      <input id="signup-password" placeholder="Password" type="password">
+      
+      <!-- New field for custom attribute: Line of Business -->
+      <input id="signup-lob" placeholder="Line of Business (e.g., Investments,MarketResearch)" type="text">
+
+      <select id="signup-group">
+        <option value="JuniorAnalystGroup">Junior Analyst Group</option>
+        <option value="SeniorAnalystGroup">Senior Analyst Group</option>
+        <option value="ComplianceOfficerGroup">Compliance Officer Group</option>
+      </select>
+      <button id="signup-button">Sign Up</button>
+      <p>Already have an account? <button id="switch-to-login">Login</button></p>
+    </div>
+
+    <div id="chat-section" style="display: none;">
+      <h2>Chat</h2>
+      <div id="messages"></div>
+      <input id="question-input" placeholder="Type a question...">
+      <button id="send-button">Send</button>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
