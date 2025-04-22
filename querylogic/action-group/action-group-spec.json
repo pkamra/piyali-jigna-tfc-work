@@ -1,69 +1,69 @@
 {
-    "openapi": "3.0.0",
-    "info": {
-      "title": "Bedrock Agent Action API",
-      "version": "1.0.0",
-      "description": "API to query the Bedrock Knowledge Base with a question and LOB filter"
-    },
-    "paths": {
-      "/ask": {
-        "post": {
-          "summary": "Ask a question to the Bedrock Agent",
-          "description": "Receive a question and a LOB (line of business) filter, then return the response from the knowledge base.",
-          "operationId": "askQuestion",
-          "requestBody": {
-            "required": true,
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Bedrock Agent Action API",
+    "version": "1.0.0",
+    "description": "API to query the Bedrock Knowledge Base with a question and one or more LOB filters"
+  },
+  "paths": {
+    "/ask": {
+      "post": {
+        "summary": "Ask a question to the Bedrock Agent",
+        "description": "Receive a question and one or more LOB (line of business) filters, then return the response.",
+        "operationId": "askQuestion",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "question": {
+                    "type": "string",
+                    "description": "The query to be sent to the knowledge base",
+                    "minLength": 1
+                  },
+                  "lobs": {
+                    "type": "array",
+                    "description": "One or more Line of Business filters for the query",
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "example": ["Market Research", "Investment"]
+                  }
+                },
+                "required": ["question", "lobs"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response with the answer from the knowledge base",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "question": {
+                    "answer": {
                       "type": "string",
-                      "description": "The query to be sent to the knowledge base",
-                      "minLength": 1
-                    },
-                    "lob": {
-                      "type": "string",
-                      "description": "Line of Business filter for the query",
-                      "minLength": 1
-                    }
-                  },
-                  "required": [
-                    "question",
-                    "lob"
-                  ]
-                }
-              }
-            }
-          },
-          "responses": {
-            "200": {
-              "description": "Successful response with the answer from the knowledge base",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "answer": {
-                        "type": "string",
-                        "description": "The response returned from the knowledge base"
-                      }
+                      "description": "The response returned from the knowledge base"
                     }
                   }
                 }
               }
-            },
-            "default": {
-              "description": "Unexpected error",
-              "content": {
-                "application/json": {
-                  "schema": {
-                    "type": "object",
-                    "properties": {
-                      "error": {
-                        "type": "string"
-                      }
+            }
+          },
+          "default": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
                     }
                   }
                 }
@@ -74,4 +74,4 @@
       }
     }
   }
-  
+}

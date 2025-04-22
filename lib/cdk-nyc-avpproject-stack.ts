@@ -15,6 +15,7 @@ import { AgentActionGroup } from '@cdklabs/generative-ai-cdk-constructs/lib/cdk-
 import * as path from "path";
 import * as lambda_python from '@aws-cdk/aws-lambda-python-alpha';
 
+
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class CdkNycAvpprojectStack extends cdk.Stack {
@@ -249,7 +250,8 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
     
     // Attach the basic execution role (managed policy)
     lambdaRole.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
+      // iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole'),
+      iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess')
     );
     
     // Explicitly define an inline policy
@@ -336,6 +338,15 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
       shouldPrepareAgent:true
     });
 
+
+    const actionGroupRole = new iam.Role(this, 'ActionGroupRole', {
+      assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com'),
+      description: 'Role for ActionGroupFunction with full admin privileges',
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'),
+      ],
+    });
+
     const actionGroupFunction = new lambda_python.PythonFunction(this, 'ActionGroupFunction', {
       runtime: lambda.Runtime.PYTHON_3_12,
       handler: 'lambda_handler',
@@ -343,7 +354,8 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
       timeout:cdk.Duration.minutes(10),
       environment:{
           KNOWLEDGE_BASE_ID: kb.knowledgeBaseId,
-      }
+      },
+      role: actionGroupRole,  
     });
 
     const actionGroup = new AgentActionGroup({
