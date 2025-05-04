@@ -16,6 +16,7 @@ import * as path from "path";
 import * as lambda_python from '@aws-cdk/aws-lambda-python-alpha';
 
 
+
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class CdkNycAvpprojectStack extends cdk.Stack {
@@ -378,6 +379,7 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_20_X,
       handler: 'index.handler',
       entry: './lambda/index.js', 
+      timeout:cdk.Duration.minutes(10),
       role: lambdaRole, // Explicitly connects the role to the Lambda function
       bundling: {
         nodeModules: ['@aws-sdk/client-verifiedpermissions'], // Dependencies to include
