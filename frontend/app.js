@@ -1,6 +1,6 @@
-const apiUrl = 'https://xx.execute-api.us-west-2.amazonaws.com/prod/invoke-lambda'; // Replace <API_ENDPOINT> with the API Gateway URL
-const userPoolId = 'us-west-2_xx'; // Replace with your Cognito User Pool ID
-const clientId = 'zzzzvnd52vhtouc1xxxx'; // Replace with your Cognito App Client ID
+const apiUrl = 'https://xxhvfs4r0c.execute-api.us-west-2.amazonaws.com/prod/invoke-lambda'; // Replace <API_ENDPOINT> with the API Gateway URL
+const userPoolId = 'us-west-2_0XoXU1Oxx'; // Replace with your Cognito User Pool ID
+const clientId = '3c34vnnaj25enxxxxxxxcbtiej0'; // Replace with your Cognito App Client ID
 const region = 'us-west-2'; // Replace with your AWS region
 let idToken = null;
 

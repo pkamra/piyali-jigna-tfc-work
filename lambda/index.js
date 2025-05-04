@@ -3,6 +3,8 @@ const { BedrockAgentRuntimeClient, InvokeAgentCommand } = require('@aws-sdk/clie
 const { v4: uuidv4 } = require('uuid');
 const { TextDecoder } = require('util');
 
+
+
 // Helper: Decode JWT token
 function decodeJwt(token) {
     const payload = token.split('.')[1];
@@ -134,42 +136,84 @@ exports.handler = async (event) => {
             // Invoke Bedrock agent
             const agentClient = new BedrockAgentRuntimeClient({ region: process.env.AWS_REGION });
             const sessionId = uuidv4();
+
             const invokeCmd = new InvokeAgentCommand({
-                agentId: process.env.BEDROCK_AGENT_ID,
-                agentAliasId: process.env.BEDROCK_AGENT_ALIAS_ID,
-                sessionId,
-                inputText: prompt,
-                enableTrace: true,
-                endSession: true
+            inputText: prompt,
+            agentId: process.env.BEDROCK_AGENT_ID,
+            agentAliasId: process.env.BEDROCK_AGENT_ALIAS_ID,
+            sessionId,
+            enableTrace: true,
+            endSession: false   // now close the session so the stream ends
             });
+
             const invokeRes = await agentClient.send(invokeCmd);
 
-            // **Fixed**: iterate the right array
-            let answer = '';
-            if (Array.isArray(invokeRes.events)) {
-                // pattern #1
-                for (const ev of invokeRes.events) {
-                const bytes = ev.event?.chunk?.bytes;
-                if (bytes) {
-                    answer += new TextDecoder().decode(bytes);
-                }
-                }
-            } else {
-                // pattern #2
-                for (const chunk of invokeRes.completion?.chunks || []) {
-                answer += new TextDecoder().decode(chunk.bytes);
-                }
-            }
-            answer = answer.trim();
+            // // collect streamed chunks and traces
+            // let agent_answer = '';
+            // const trace_data = [];
 
+            // for await (const evt of invokeRes.completion) {
+            //     if (evt.chunk) {
+            //         agent_answer += new TextDecoder().decode(evt.chunk.bytes);
+            //         console.log(agent_answer)
+            //     } else if (evt.trace) {
+            //         trace_data.push(evt.trace);
+            //     } else {
+            //         throw new Error("Unexpected event from Bedrock Agent");
+            //     }
+            // }
+
+            // agent_answer = agent_answer.trim();
+
+            // // preserve metadata if you need it
+            // invokeRes.$metadata = {
+            //     contentType: invokeRes.contentType,
+            //     sessionId:   invokeRes.sessionId
+            // };
+
+            // console.log(agent_answer);
+
+
+            event_stream = invokeRes['completion']
+            end_event_received = false
+            trace_data = []
+            agent_answer=''
+          
+            try {
+                for await (const event of event_stream) {
+                    console.log('this is event:  ',event)
+                    if ('chunk' in event) {
+                        const data = event.chunk.bytes;
+                        const agentAnswer = new TextDecoder().decode(data);
+                        agent_answer += agentAnswer;
+                        end_event_received = true;
+                    } else if ('trace' in event) {
+                        const trace = event.trace;
+                        trace.start_trace_time = Date.now();
+                        trace_data.push(trace);
+                    } else {
+                        throw new Error('Unexpected event.', event);
+                    }
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+            console.log("agent answer",agent_answer);
             return {
-                statusCode: 200,
-                body: JSON.stringify({ message: 'Access granted', details: finalDecision }),
-            };
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': JSON.stringify({
+                    'sessionId': sessionId,
+                    'message': agent_answer
+                })
+            }
         } else {
             return {
                 statusCode: 403,
-                body: JSON.stringify({ message: 'Access denied', details: finalDecision }),
+                body: JSON.stringify({ message: 'Access denied', details: 'Failed' }),
             };
         }
     } catch (error) {

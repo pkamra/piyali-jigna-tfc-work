@@ -25,10 +25,42 @@ def lambda_handler(event, context):
         body = raw
 
     print("Parsed body:", body)
-    question = body.get("question")
-    lobs     = body.get("lobs", [])
+    # question = body.get("question")
+    # lobs     = body.get("lobs", [])
+
+    # after you’ve parsed `body`…
+    props = (
+        body
+        .get("requestBody", {})
+        .get("content", {})
+        .get("application/json", {})
+        .get("properties", [])
+    )
+
+    # pull out the two values
+    question = None
+    raw_lobs = None
+    for p in props:
+        if p.get("name") == "question":
+            question = p.get("value")
+        elif p.get("name") == "lobs":
+            raw_lobs = p.get("value")
+
+    # now normalize raw_lobs into a Python list
+    if raw_lobs is None:
+        lobs = []
+    else:
+        # try JSON first (in case it really was '["A","B"]')
+        try:
+            parsed = json.loads(raw_lobs)
+            lobs = parsed if isinstance(parsed, list) else [parsed]
+        except Exception:
+            # fallback: strip brackets and comma‐split
+            trimmed = raw_lobs.strip("[]")
+            lobs = [item.strip() for item in trimmed.split(",") if item.strip()]
 
     print(f"Question: {question!r}, LOBs: {lobs}")
+
 
     if not question or not isinstance(lobs, list) or not lobs:
         print("Missing required fields")
@@ -95,8 +127,22 @@ def lambda_handler(event, context):
     answer = resp.get("output", {}).get("text", "")
     print("Extracted answer:", answer)
 
-    # 5) Return
-    return {
-        "statusCode": 200,
-        "body": json.dumps({"answer": answer})
+    response_body = {
+        'application/json': {
+            'body': {
+                'answer': answer
+            }
+        }
     }
+
+    return {
+        'messageVersion': '1.0',
+        'response': {
+            'actionGroup': event['actionGroup'],
+            'apiPath': event['apiPath'],
+            'httpMethod': event['httpMethod'],
+            'httpStatusCode': 200,
+            'responseBody': response_body
+        }
+    }
+
