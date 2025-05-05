@@ -88,7 +88,8 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
       signInAliases: { email: true },
       autoVerify: { email: true }, // Disable automatic email verification
       customAttributes: {
-        lob: new cognito.StringAttribute({ mutable: true })
+        lob: new cognito.StringAttribute({ mutable: true }),
+        region: new cognito.StringAttribute({ mutable: true })
       },
       passwordPolicy: {
         minLength: 8,
@@ -134,6 +135,11 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
       userPoolId: userPool.userPoolId,
     });
 
+    const portfolioManagerGroup = new cognito.CfnUserPoolGroup(this, 'PortfolioManagerGroup', {
+      groupName: 'PortfolioManagerGroup',
+      userPoolId: userPool.userPoolId,
+    });
+
     // Step 4: Verified Permissions Policy Store
     const policyStore = new verifiedpermissions.CfnPolicyStore(this, 'PolicyStore', {
       description: 'Policy store for invoking lambda resources',
@@ -160,6 +166,9 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
                           attributes:{
                             lob: {
                               type: 'String'
+                            },
+                            region: {
+                              type: 'String'
                             }
                           }
                         }
@@ -171,6 +180,9 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
                     type: 'Record',
                     attributes: {
                       lineOfBusiness:{
+                        type: "String"
+                      },
+                      region:{
                         type: "String"
                       }
                     },
@@ -206,7 +218,7 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
       )
       when
       {
-        resource.lineOfBusiness == "Investments"
+        resource.lineOfBusiness == "Investments"  && resource.region == "EMEA"
       };
     `;
 
@@ -230,7 +242,7 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
     )
     when
     {
-      resource.lineOfBusiness == "Market Research"
+      resource.lineOfBusiness == "Investments"  && resource.region == "APAC" 
     };
   `;
 
@@ -325,7 +337,7 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
     const dataSource = new bedrock.S3DataSource(this, 'DataSource', {
       bucket: docBucket,
       knowledgeBase: kb,
-      dataSourceName: 'books',
+      dataSourceName: 'financedocs',
       chunkingStrategy: bedrock.ChunkingStrategy.fixedSize({
         maxTokens: 500,
         overlapPercentage: 20
@@ -334,7 +346,29 @@ export class CdkNycAvpprojectStack extends cdk.Stack {
 
     const agent = new bedrock.Agent(this, 'Agent', {
       foundationModel: bedrock.BedrockFoundationModel.ANTHROPIC_CLAUDE_3_5_HAIKU_V1_0,
-      instruction: 'You are a helpful and friendly agent that answers questions about financial documents.',
+      instruction: 
+`You are “FinMarkets-Assist”, an AI agent serving a research & compliance portal.
+Inputs supplied to you at every call
+  • role            = {junioranalyst | senioranalyst | portfoliomanager | complianceofficer}
+  • region          = {Americas | EMEA | APAC | Global}
+  • allowedLobs     = one-or-many of {Investments, MarketResearch, Compliance}
+  • userQuestion    = the natural-language question typed by the user
+=== You MUST follow trhe following response-fidelity rules ===
+1. For JuniorAnalystGroup
+   • Provide *qualitative* insights only—no explicit numbers, percentages, money amounts,
+     ratios, or dates.
+2. For SeniorAnalystGroup
+   • Provide precise quantitative details found in the excerpts (figures, growth rates,
+     YoY / QoQ changes) and brief comparisons.
+3. For PortfolioManagerGroup
+   • Provide the same quantitative detail as a senioranalyst **plus** portfolio-action
+     guidance (recommended tilts, hedging ideas) that logically follows from the data.
+4. For ComplianceOfficerGroup
+   • Provide regulatory metrics / thresholds only (e.g., CET1, leverage, LCR).  
+   • Do **not** give investment advice.
+General formatting
+• Answer in 2-5 concise bullet points unless a narrative is essential.
+• After each bullet, cite the excerpt ID or page number you used, in parentheses.`,
       userInputEnabled: true,
       shouldPrepareAgent:true
     });

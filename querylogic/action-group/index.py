@@ -40,11 +40,14 @@ def lambda_handler(event, context):
     # pull out the two values
     question = None
     raw_lobs = None
+    region = None
     for p in props:
         if p.get("name") == "question":
             question = p.get("value")
         elif p.get("name") == "lobs":
             raw_lobs = p.get("value")
+        elif p.get("name") == "region":
+            region =  p.get("value")
 
     # now normalize raw_lobs into a Python list
     if raw_lobs is None:
@@ -59,15 +62,15 @@ def lambda_handler(event, context):
             trimmed = raw_lobs.strip("[]")
             lobs = [item.strip() for item in trimmed.split(",") if item.strip()]
 
-    print(f"Question: {question!r}, LOBs: {lobs}")
+    print(f"Question: {question!r}, LOBs: {lobs}, Region: {region!r}")
 
 
-    if not question or not isinstance(lobs, list) or not lobs:
+    if not question or not region or not isinstance(lobs, list) or not lobs:
         print("Missing required fields")
         return {
             "statusCode": 400,
             "body": json.dumps({
-                "error": "Missing required fields. Provide 'question' and a non-empty 'lobs' array."
+                "error": "Missing required fields. Provide 'question' and a 'region' and a non-empty 'lobs' array."
             })
         }
 
@@ -90,9 +93,19 @@ def lambda_handler(event, context):
 
     # 3) Build filter
     if len(lobs) == 1:
-        filter_expr = { "equals": { "key": "lob", "value": lobs[0] } }
+        lob_clause = { "equals": { "key": "lob", "value": lobs[0] } }
     else:
-        filter_expr = { "in": { "key": "lob", "value": lobs } }
+        lob_clause = { "in": { "key": "lob", "value": lobs } }
+
+    # 4) Region clause — allow region-specific docs **or** those tagged Global
+    region_clause = {
+        "equals": { "key": "region", "value": region }   # e.g. "Americas"
+    }
+
+    # ---------- combine them ----------
+    filter_expr = {
+        "andAll": [ lob_clause, region_clause ]
+    }
     print("Filter expression:", json.dumps(filter_expr))
 
     # 4) Call retrieve_and_generate

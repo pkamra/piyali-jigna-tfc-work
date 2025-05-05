@@ -36,6 +36,7 @@ exports.handler = async (event) => {
         console.log("🧾 Decoded ID token:", JSON.stringify(decoded, null, 2));
         console.log("👥 Groups:", decoded["cognito:groups"]);
         console.log("🏷️  LOB (raw):", decoded["custom:lob"]);
+        console.log("🏷️  Region (raw):", decoded["custom:region"]);
 
         // 3) Parse user’s custom:lob into an array (JSON or comma-delimited)
         let userLobs = [];
@@ -54,6 +55,9 @@ exports.handler = async (event) => {
         // e.g. ["Investments","Market Research"]
         }
         console.log("Parsed user LOB array:", userLobs);
+
+        // #4) Parse user’s custom:region
+        const region = decoded["custom:region"] || "";
 
         // Initialize Verified Permissions client
         const client = new VerifiedPermissionsClient({});
@@ -91,6 +95,9 @@ exports.handler = async (event) => {
                         attributes: {
                         lineOfBusiness: {
                             string: oneUserLob
+                        },
+                        region: {
+                            string: region
                         }
                         }
                     }
@@ -99,7 +106,7 @@ exports.handler = async (event) => {
             });
 
             const response = await client.send(command);
-            console.log("AVP Decision for resource LOB:", oneUserLob, "=", response.decision);
+            console.log("AVP Decision for resource LOB:", oneUserLob, " Region: ", region, "=", response.decision);
             if (response.decision !== "ALLOW") {
               // If *any* iteration yields DENY, the final is DENY
               finalDecision = "DENY";
@@ -130,7 +137,8 @@ exports.handler = async (event) => {
             const prompt = [
                 `Question: ${question}`,
                 `Role: ${groups.join(',')}`,
-                `LOB: ${userLobs.join(',')}`
+                `LOB: ${userLobs.join(',')}`,
+                `Region: ${region}}`
             ].join('--') + '\n\n';
 
             // Invoke Bedrock agent

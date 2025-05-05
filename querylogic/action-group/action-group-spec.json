@@ -1,15 +1,15 @@
 {
   "openapi": "3.0.0",
   "info": {
-    "title": "Bedrock Agent Action API",
+    "title": "API that will provide responses to  investment management and financial markets questions",
     "version": "1.0.0",
-    "description": "API to query the Bedrock Knowledge Base with a question and one or more LOB filters"
+    "description": "API to provide responses to investment management and financial markets questions for one or more Lines of business for a specific region."
   },
   "paths": {
     "/ask": {
       "post": {
-        "summary": "Ask a question to the Bedrock Agent",
-        "description": "Receive a question and one or more LOB (line of business) filters, then return the response.",
+        "summary": "Ask a investment management or financial market question",
+        "description": "Receive a question and one or more LOB (line of business) filters, a region and then return the response.",
         "operationId": "askQuestion",
         "requestBody": {
           "required": true,
@@ -23,6 +23,11 @@
                     "description": "The query to be sent to the knowledge base",
                     "minLength": 1
                   },
+                  "region": {
+                    "type": "string",
+                    "description": "The region for which the question is sent",
+                    "minLength": 1
+                  },
                   "lobs": {
                     "type": "array",
                     "description": "One or more Line of Business filters for the query",
@@ -33,7 +38,7 @@
                     "example": ["Market Research", "Investment"]
                   }
                 },
-                "required": ["question", "lobs"]
+                "required": ["question", "lobs","region"]
               }
             }
           }

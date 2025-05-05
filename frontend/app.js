@@ -1,6 +1,6 @@
-const apiUrl = 'https://xxhvfs4r0c.execute-api.us-west-2.amazonaws.com/prod/invoke-lambda'; // Replace <API_ENDPOINT> with the API Gateway URL
-const userPoolId = 'us-west-2_0XoXU1Oxx'; // Replace with your Cognito User Pool ID
-const clientId = '3c34vnnaj25enxxxxxxxcbtiej0'; // Replace with your Cognito App Client ID
+const apiUrl = 'https://xxx.execute-api.us-west-2.amazonaws.com/prod/invoke-lambda'; // Replace <API_ENDPOINT> with the API Gateway URL
+const userPoolId = 'us-west-xxx'; // Replace with your Cognito User Pool ID
+const clientId = 'xxx'; // Replace with your Cognito App Client ID
 const region = 'us-west-2'; // Replace with your AWS region
 let idToken = null;
 
@@ -24,9 +24,10 @@ document.getElementById('signup-button').addEventListener('click', async () => {
 
   // Retrieve custom attribute(s); for example, LOB.
   const lob = document.getElementById('signup-lob').value;
+  const field_region = document.getElementById('signup-region').value;
 
   // Input validation
-  if (!email || !password || !group || !lob) {
+  if (!email || !password || !group || !lob || !field_region) {
     alert('Please fill out all fields including your Line of Business.');
     return;
   }
@@ -46,7 +47,7 @@ document.getElementById('signup-button').addEventListener('click', async () => {
         UserAttributes: [
           { Name: 'email', Value: email },
           { Name: 'custom:lob', Value: lob } ,// Pass the custom LOB attribute. 
-          // { Name: 'group', Value: group },
+          { Name: 'custom:region', Value: field_region },
         ],
         // ValidationData: [
         //   { Name: 'group', Value: group }, // Pass group as metadata, not as a custom attribute
