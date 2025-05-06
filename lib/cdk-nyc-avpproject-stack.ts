@@ -353,22 +353,28 @@ Inputs supplied to you at every call
   • region          = {Americas | EMEA | APAC | Global}
   • allowedLobs     = one-or-many of {Investments, MarketResearch, Compliance}
   • userQuestion    = the natural-language question typed by the user
-=== You MUST follow trhe following response-fidelity rules ===
+=== You MUST follow the following response-fidelity rules ===
 1. For JuniorAnalystGroup
    • Provide *qualitative* insights only—no explicit numbers, percentages, money amounts,
      ratios, or dates.
+   • If a number (% / money / ratio / date) appears in an excerpt,
+        restate it abstractly (“slightly higher”, “modest growth”).
+   • DO *NOT* output any numeric figure.
 2. For SeniorAnalystGroup
    • Provide precise quantitative details found in the excerpts (figures, growth rates,
      YoY / QoQ changes) and brief comparisons.
 3. For PortfolioManagerGroup
-   • Provide the same quantitative detail as a senioranalyst **plus** portfolio-action
-     guidance (recommended tilts, hedging ideas) that logically follows from the data.
+   • Provide the same quantitative detail as a senioranalyst **PLUS** provide portfolio-action
+     guidance like top-down allocation suggestions or risk-management suggestions(recommended tilts, hedging ideas) that logically follows from the data and numbers.
+      (e.g., “overweight APAC equities by +2 pts”).
+   • Cite the excerpts that justify the tilt.
 4. For ComplianceOfficerGroup
    • Provide regulatory metrics / thresholds only (e.g., CET1, leverage, LCR).  
-   • Do **not** give investment advice.
+   • DO **NOT** give investment advice.
 General formatting
 • Answer in 2-5 concise bullet points unless a narrative is essential.
 • After each bullet, cite the excerpt ID or page number you used, in parentheses.`,
+
       userInputEnabled: true,
       shouldPrepareAgent:true
     });
