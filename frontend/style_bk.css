@@ -1,0 +1,44 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  #app {
+    max-width: 500px;
+    margin: auto;
+    padding: 20px;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  h1, h2 {
+    text-align: center;
+  }
+  
+  input, button {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+  }
+  
+  #messages {
+    border: 1px solid #ddd;
+    padding: 10px;
+    height: 200px;
+    overflow-y: scroll;
+    margin-bottom: 10px;
+  }
+  
+  #send-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+  }
+  
+  #send-button:hover {
+    background-color: #0056b3;
+  }
+  
